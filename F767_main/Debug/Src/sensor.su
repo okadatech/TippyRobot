@@ -1,0 +1,13 @@
+sensor.c:15:6:HMC6352_init	24	static
+sensor.c:26:5:HMC6352_def_set	24	static
+sensor.c:40:5:HMC6352_yaw_get	24	static
+sensor.c:69:6:JY901_init	0	static
+sensor.c:78:6:HOUI_calibration	40	static
+sensor.c:125:5:JY901_def_set	32	static
+sensor.c:139:5:JY901_yaw_get	32	static
+sensor.c:159:6:openMV_data_get	72	static
+sensor.c:213:6:getplace	16	static
+sensor.c:243:6:Ultrasonic_get	12	static
+sensor.c:271:6:IR_get	8	static
+sensor.c:299:6:Line_Reset	0	static
+sensor.c:396:9:make_end_flug	16	static

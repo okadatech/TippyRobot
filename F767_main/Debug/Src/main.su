@@ -1,0 +1,17 @@
+main.c:88:6:HAL_TIM_PeriodElapsedCallback	24	static
+main.c:157:6:HAL_UART_RxCpltCallback	8	static
+main.c:465:6:SystemClock_Config	240	static
+main.c:607:6:orange_ball_big_field	0	static
+main.c:611:6:IR_ball_big_field	0	static
+main.c:615:6:orange_ball_normal_field_use_marker	0	static
+main.c:619:6:kick	8	static
+main.c:633:6:GOLE	8	static
+main.c:735:6:ball_near	48	static
+main.c:802:6:ball_middle	48	static
+main.c:870:6:ball_far	48	static
+main.c:939:6:returnHorme	8	static
+main.c:581:6:IR_ball_normal_field	8	static
+main.c:966:6:dataprintf	32	static
+main.c:548:6:orange_ball_normal_field	8	static
+main.c:166:5:main	8	static
+main.c:1021:6:_Error_Handler	0	static

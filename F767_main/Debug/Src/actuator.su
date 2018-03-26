@@ -1,0 +1,7 @@
+actuator.c:9:6:light	24	static
+actuator.c:22:6:motor1	16	static
+actuator.c:60:6:motor2	16	static
+actuator.c:99:6:motor3	16	static
+actuator.c:138:6:motor4	16	static
+actuator.c:175:6:beep	24	static
+actuator.c:184:6:map_a	8	static
