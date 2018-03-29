@@ -92,7 +92,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 				motor2(1000,0);
 				motor3(1000,0);
 				motor4(1000,0);
-			  delayUs(1);
+			  delayUs(6);
 			  HAL_IWDG_Refresh(&hiwdg);
 			  lineflugf[counttime]=1;
 			 //}
@@ -104,7 +104,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 				motor2(1000,0);
 				motor3(0,1000);
 				motor4(1000,0);
-			  delayUs(1);
+			  delayUs(6);
 			  HAL_IWDG_Refresh(&hiwdg);
 			  lineflugr[counttime]=1;
 			 //}
@@ -116,7 +116,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 				motor2(0,1000);
 				motor3(1000,0);
 				motor4(0,1000);
-				  delayUs(1);
+				  delayUs(6);
 				  HAL_IWDG_Refresh(&hiwdg);
 				  lineflugl[counttime]=1;
 			//  }
@@ -128,7 +128,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 				motor2(0,1000);
 				motor3(0,1000);
 				motor4(0,1000);
-			  delayUs(1);
+			  delayUs(6);
 			  HAL_IWDG_Refresh(&hiwdg);
 			  lineflugb[counttime]=1;
 			 //}

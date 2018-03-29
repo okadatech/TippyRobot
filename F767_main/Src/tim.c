@@ -246,7 +246,7 @@ void MX_TIM6_Init(void)
 {
 
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 15;
+  htim6.Init.Prescaler = 11;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim6.Init.Period = 215;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;

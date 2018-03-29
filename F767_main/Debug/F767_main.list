@@ -8180,8 +8180,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  8003194:	2100      	movs	r1, #0
  8003196:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
  800319a:	f7ff fd31 	bl	8002c00 <motor4>
-			  delayUs(1);
- 800319e:	2001      	movs	r0, #1
+			  delayUs(6);
+ 800319e:	2006      	movs	r0, #6
  80031a0:	f001 f966 	bl	8004470 <delayUs>
 			  HAL_IWDG_Refresh(&hiwdg);
  80031a4:	4876      	ldr	r0, [pc, #472]	; (8003380 <HAL_TIM_PeriodElapsedCallback+0x224>)
@@ -8217,8 +8217,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  80031e0:	2100      	movs	r1, #0
  80031e2:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
  80031e6:	f7ff fd0b 	bl	8002c00 <motor4>
-			  delayUs(1);
- 80031ea:	2001      	movs	r0, #1
+			  delayUs(6);
+ 80031ea:	2006      	movs	r0, #6
  80031ec:	f001 f940 	bl	8004470 <delayUs>
 			  HAL_IWDG_Refresh(&hiwdg);
  80031f0:	4863      	ldr	r0, [pc, #396]	; (8003380 <HAL_TIM_PeriodElapsedCallback+0x224>)
@@ -8254,8 +8254,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  800322c:	f44f 717a 	mov.w	r1, #1000	; 0x3e8
  8003230:	2000      	movs	r0, #0
  8003232:	f7ff fce5 	bl	8002c00 <motor4>
-				  delayUs(1);
- 8003236:	2001      	movs	r0, #1
+				  delayUs(6);
+ 8003236:	2006      	movs	r0, #6
  8003238:	f001 f91a 	bl	8004470 <delayUs>
 				  HAL_IWDG_Refresh(&hiwdg);
  800323c:	4850      	ldr	r0, [pc, #320]	; (8003380 <HAL_TIM_PeriodElapsedCallback+0x224>)
@@ -8291,8 +8291,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  800327a:	f44f 717a 	mov.w	r1, #1000	; 0x3e8
  800327e:	2000      	movs	r0, #0
  8003280:	f7ff fcbe 	bl	8002c00 <motor4>
-			  delayUs(1);
- 8003284:	2001      	movs	r0, #1
+			  delayUs(6);
+ 8003284:	2006      	movs	r0, #6
  8003286:	f001 f8f3 	bl	8004470 <delayUs>
 			  HAL_IWDG_Refresh(&hiwdg);
  800328a:	483d      	ldr	r0, [pc, #244]	; (8003380 <HAL_TIM_PeriodElapsedCallback+0x224>)
@@ -13879,13 +13879,13 @@ void MX_TIM6_Init(void)
 
   htim6.Instance = TIM6;
  8005c0a:	4810      	ldr	r0, [pc, #64]	; (8005c4c <MX_TIM6_Init+0x44>)
-  htim6.Init.Prescaler = 15;
- 8005c0c:	230f      	movs	r3, #15
+  htim6.Init.Prescaler = 11;
+ 8005c0c:	230b      	movs	r3, #11
  8005c0e:	4910      	ldr	r1, [pc, #64]	; (8005c50 <MX_TIM6_Init+0x48>)
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim6.Init.Period = 215;
  8005c10:	22d7      	movs	r2, #215	; 0xd7
-  htim6.Init.Prescaler = 15;
+  htim6.Init.Prescaler = 11;
  8005c12:	e880 000a 	stmia.w	r0, {r1, r3}
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
  8005c16:	2300      	movs	r3, #0
