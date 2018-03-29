@@ -9,8 +9,8 @@ from pyb import UART
 from pyb import LED
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 ball_color = [(30, 70, 40, 80, 30, 70)]     #ball_color 0b00001 (20, 70, 35, 80, 20, 70)
-color= [  #(0, 15, 0, 40, -80, -20)  #yerrow
-          #(5, 20, -10, 30, -40, 0) #blue
+color= [  #30, 80, -20, 5, 40, 70)  #yerrow
+          #(5, 15, -10, 10, -10, 10) #blue
           #(30, 100, -64, -8, -32, 32),  #red        0b00001
           #(0, 15, 0, 40, -80, -20),    #Cyan       0b00010
           #(0, 15, 0, 40, -80, -20),    #green      0b00100
