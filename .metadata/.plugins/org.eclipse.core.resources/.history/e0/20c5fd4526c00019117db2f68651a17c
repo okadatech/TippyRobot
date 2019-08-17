@@ -1,0 +1,1138 @@
+
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  ** This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
+  *
+  * COPYRIGHT(c) 2018 STMicroelectronics
+  *
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *   1. Redistributions of source code must retain the above copyright notice,
+  *      this list of conditions and the following disclaimer.
+  *   2. Redistributions in binary form must reproduce the above copyright notice,
+  *      this list of conditions and the following disclaimer in the documentation
+  *      and/or other materials provided with the distribution.
+  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *      may be used to endorse or promote products derived from this software
+  *      without specific prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  ******************************************************************************
+  */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "stm32f7xx_hal.h"
+#include "dma.h"
+#include "i2c.h"
+#include "iwdg.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+
+/* USER CODE BEGIN Includes */
+#include "management.h"
+/* USER CODE END Includes */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+/* Private variables ---------------------------------------------------------*/
+TIM_MasterConfigTypeDef sMasterConfig;
+TIM_OC_InitTypeDef sConfigOC;
+TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
+TIM_Encoder_InitTypeDef sConfig;
+TIM_MasterConfigTypeDef sMasterConfig;
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+
+/* USER CODE BEGIN PFP */
+/* Private function prototypes -----------------------------------------------*/
+uint8_t make_end_flug();
+void orange_ball_normal_field();
+void IR_ball_normal_field();
+void orange_ball_big_field();
+void IR_ball_big_field();
+void orange_ball_normal_field_use_marker();
+void ball_near(int ball_digree,int distance);
+void ball_middle(int ball_digree,int distance);
+void ball_far(int ball_digree,int distance);
+void GOLE();
+void dataprintf();
+void returnHorme();
+void kick();
+/* USER CODE END PFP */
+
+/* USER CODE BEGIN 0 */
+uint8_t counttime;
+uint8_t modetemp=1;
+uint32_t lineflugf[6]={0},lineflugb[6]={0},lineflugr[6]={0},lineflugl[6]={0};
+unsigned int vel_norm=0;
+int  vel_angle=0;
+int  omega=0;
+int  kick_power=0;
+int  dribble_power=0;
+uint8_t n;
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+		 if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13)){
+			 //while(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13)){
+			 	motor1(1000,0);
+				motor2(1000,0);
+				motor3(1000,0);
+				motor4(1000,0);
+			  delayUs(6);
+			  HAL_IWDG_Refresh(&hiwdg);
+			  lineflugf[counttime]=1;
+			 //}
+		 }
+		 else{lineflugf[counttime]=0;}
+		  if(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_6)){
+			 // while(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_6)){
+				motor1(0,1000);
+				motor2(1000,0);
+				motor3(0,1000);
+				motor4(1000,0);
+			  delayUs(6);
+			  HAL_IWDG_Refresh(&hiwdg);
+			  lineflugr[counttime]=1;
+			 //}
+		  }
+			 else{lineflugr[counttime]=0;}
+		  if(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_5)){
+			  //while(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_5)){
+				motor1(1000,0);
+				motor2(0,1000);
+				motor3(1000,0);
+				motor4(0,1000);
+				  delayUs(6);
+				  HAL_IWDG_Refresh(&hiwdg);
+				  lineflugl[counttime]=1;
+			//  }
+			  }
+			 else{lineflugl[counttime]=0;}
+		  if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_14)){
+			 //while(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_14)){
+				motor1(0,1000);
+				motor2(0,1000);
+				motor3(0,1000);
+				motor4(0,1000);
+			  delayUs(6);
+			  HAL_IWDG_Refresh(&hiwdg);
+			  lineflugb[counttime]=1;
+			 //}
+		  }
+			 else{lineflugb[counttime]=0;}
+		  if(lineflugf[0]+lineflugf[1]+lineflugf[2]+lineflugf[3]+lineflugf[4]+lineflugf[5]>=4){
+			  linetemp=linetemp|0b00000001;
+		 }
+		  if(lineflugr[0]+lineflugr[1]+lineflugr[2]+lineflugr[3]+lineflugr[4]+lineflugr[5]>=4){
+			  linetemp=linetemp|0b00000010;
+
+				 TIM2->CNT=29965;
+		  }
+		  if(lineflugl[0]+lineflugl[1]+lineflugl[2]+lineflugl[3]+lineflugl[4]+lineflugl[5]>=4){
+				  linetemp=linetemp|0b00000100;
+				  TIM2->CNT=30035;
+			  }
+		  if(lineflugb[0]+lineflugb[1]+lineflugb[2]+lineflugb[3]+lineflugb[4]+lineflugb[5]>=4){
+			  linetemp=linetemp|0b00001000;
+		  }
+		  counttime++;
+		  if(counttime>5){
+			  counttime=0;
+		  }
+}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	  openMV_data_get();
+	  Ultrasonic_get();
+	  IR_get();
+	  ETH_get();
+	  Line_Reset(balldata[1],IRdata[1],mode);
+}
+
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  *
+  * @retval None
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
+	/*
+	エンコーダー値未取得
+	*/
+  /* USER CODE END 1 */
+
+  /* Enable I-Cache-------------------------------------------------------------*/
+  SCB_EnableICache();
+
+  /* Enable D-Cache-------------------------------------------------------------*/
+  SCB_EnableDCache();
+
+  /* MCU Configuration----------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  //MX_IWDG_Init();
+  MX_USART6_UART_Init();
+  MX_I2C3_Init();
+  MX_TIM6_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM1_Init();
+  MX_UART8_Init();
+  MX_TIM4_Init();
+  MX_UART4_Init();
+  /* USER CODE BEGIN 2 */
+
+  init_xpritf(&huart1);
+  xdev_out(uart_putc);
+  JY901_init(&hi2c1);
+  HMC6352_init(&hi2c1);
+  if(HAL_TIM_Encoder_Init(&htim3, &sConfig) != HAL_OK)
+        {
+          Error_Handler();
+        }
+     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+     TIM3->CNT=7;
+     if(HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK)
+     {
+       Error_Handler();
+     }
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+  TIM2->CNT=30000;
+  HAL_UART_Receive_DMA(&huart2, (uint8_t *)Rxbuf_opneMV,11);
+  HAL_UART_Receive_DMA(&huart3, (uint8_t *)Rxbuf_Ultrasonic,11);
+  HAL_UART_Receive_DMA(&huart4, (uint8_t *)Rxbuf_IR,5);
+  HAL_UART_Receive_DMA(&huart6, (uint8_t *)Rxbuf_ETH,8);
+  if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12)==1){
+  beep(3,50,50);
+  MX_IWDG_Init();
+  }
+  else{
+	  beep(10,30,30);
+  }
+  DFPlayer_init(&huart8);
+  HAL_Delay(500);
+  HAL_IWDG_Refresh(&hiwdg);
+  DFPlayer_setvolume(0x10);
+  HAL_Delay(200);
+  DFPlayer_playmp3(3);
+  HAL_IWDG_Refresh(&hiwdg);
+  HOUI_def=JY901_def_set();
+  linetemp=0;
+  place[0]=3;
+  place[1]=3;
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+  /* USER CODE END WHILE */
+
+  /* USER CODE BEGIN 3 */
+	 //HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+	  HAL_IWDG_Refresh(&hiwdg);
+	  HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+		dataprintf();
+		delayUs(100);
+		mode=7-(TIM3->CNT);
+	  if(mode!=modetemp){
+		  beep(1,5,5);
+	  }
+		modetemp=mode;
+		switch (mode) {
+			case 0:
+				motor_move(0,0,0);
+				light(1000,0,1000);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					motor_move(0,0,0);
+					DFPlayer_playmp3(11);
+					HOUI_calibration(2000,1);
+					motor_move(200,0,200);
+					HOUI_calibration(24900,2);
+					HOUI_calibration(100,3);
+					motor_move(0,0,0);
+					HOUI_calibration(100,4);
+					DFPlayer_stopmp3();
+					beep(2,100,100);
+					HAL_IWDG_Refresh(&hiwdg);
+				}
+				break;
+			case 1:
+				motor_move(0,0,0);
+				light(1000,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					DFPlayer_playmp3(4);
+					HAL_Delay(500);
+					HAL_IWDG_Refresh(&hiwdg);
+					beep(1,10,100);
+					HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,1);
+					HAL_Delay(40);
+					HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,0);
+					HAL_Delay(30);
+				     TIM3->CNT=6;
+				}
+				break;
+			case 2:
+				//orange ball normal field
+				light(0,1000,1000);
+				motor_move(0,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					HAL_TIM_Base_Start_IT(&htim6);
+					light(1000,1000,1000);
+					DFPlayer_playmp3(6);
+					while(make_end_flug()){
+					    HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+						HAL_IWDG_Refresh(&hiwdg);
+						HOUI_Correction();
+						orange_ball_normal_field();
+						dataprintf();
+					}
+					HAL_TIM_Base_Stop_IT(&htim6);
+					motor_move(0,0,0);
+					light(0,1000,1000);
+					DFPlayer_playmp3(5);
+					HAL_Delay(1500);
+					DFPlayer_stopmp3();
+					HAL_IWDG_Refresh(&hiwdg);
+					  TIM2->CNT=30000;
+				}
+				break;
+			case 3:
+				//IR ball normal field
+				light(1000,1000,0);
+				motor_move(0,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					light(1000,1000,1000);
+					  HAL_TIM_Base_Start_IT(&htim6);
+					if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+						light(1000,1000,1000);
+						DFPlayer_playmp3(6);
+						while(make_end_flug()){
+							HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+							HAL_IWDG_Refresh(&hiwdg);
+							HOUI_Correction();
+							IR_ball_normal_field();
+							dataprintf();
+						}
+						HAL_TIM_Base_Stop_IT(&htim6);
+						light(1000,1000,0);
+						motor_move(0,0,0);
+						DFPlayer_playmp3(5);
+						HAL_Delay(1500);
+						DFPlayer_stopmp3();
+						HAL_IWDG_Refresh(&hiwdg);
+						  TIM2->CNT=30000;
+					}
+				}
+				break;
+			case 4:
+				//orange ball big field
+				light(0,1000,0);
+				motor_move(0,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					light(1000,1000,1000);
+					  //HAL_TIM_Base_Start_IT(&htim6);
+					HAL_TIM_Base_Stop_IT(&htim6);
+					if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+						light(1000,1000,1000);
+						DFPlayer_playmp3(6);
+						while(make_end_flug()){
+							HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+							HAL_IWDG_Refresh(&hiwdg);
+							//HOUI_Correction();
+							orange_ball_big_field();
+						}
+						HAL_TIM_Base_Stop_IT(&htim6);
+						light(0,1000,0);
+						motor_move(0,0,0);
+						DFPlayer_playmp3(5);
+						HAL_Delay(1500);
+						DFPlayer_stopmp3();
+						HAL_IWDG_Refresh(&hiwdg);
+					}
+				}
+				break;
+			case 5:
+				//IR ball big field
+				light(0,0,1000);
+				motor_move(0,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					light(1000,1000,1000);
+					  HAL_TIM_Base_Start_IT(&htim6);
+					if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+						light(1000,1000,1000);
+						DFPlayer_playmp3(6);
+						while(make_end_flug()){
+							HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+							HAL_IWDG_Refresh(&hiwdg);
+							HOUI_Correction();
+							IR_ball_big_field();
+						}
+
+						  TIM2->CNT=30000;
+						HAL_TIM_Base_Stop_IT(&htim6);
+						light(0,0,1000);
+						motor_move(0,0,0);
+						DFPlayer_playmp3(5);
+						HAL_Delay(1500);
+						DFPlayer_stopmp3();
+						HAL_IWDG_Refresh(&hiwdg);
+					}
+				}
+				break;
+			case 6:
+				//orange ball normal field use marker
+				light(0,0,0);
+				motor_move(0,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					  //HAL_TIM_Base_Start_IT(&htim6);
+					light(1000,1000,1000);
+					if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+						light(1000,1000,1000);
+						DFPlayer_playmp3(6);
+						while(make_end_flug()){
+						/*	HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+							HAL_IWDG_Refresh(&hiwdg);
+							HOUI_Correction();
+							orange_ball_normal_field_use_marker();*/
+							HAL_IWDG_Refresh(&hiwdg);
+
+						    if(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_3)==1){
+							kick();
+						    }
+						}
+						//HAL_TIM_Base_Stop_IT(&htim6);
+						light(0,0,0);
+						motor_move(0,0,0);
+						DFPlayer_playmp3(5);
+						HAL_Delay(1500);
+						DFPlayer_stopmp3();
+						HAL_IWDG_Refresh(&hiwdg);
+					}
+				}
+				break;
+			case 7:
+				//HOUI_set
+				light(1000,1000,1000);
+				motor_move(0,0,0);
+				if(HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15)==1){
+					light(1000,1000,1000);
+					HAL_IWDG_Refresh(&hiwdg);
+					DFPlayer_playmp3(12);
+					HOUI_def=JY901_def_set();
+				}
+				break;
+				  linetemp=0;
+			}
+  }
+  /* USER CODE END 3 */
+
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+
+    /**Configure the main internal regulator output voltage 
+    */
+  __HAL_RCC_PWR_CLK_ENABLE();
+
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 216;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Activate the Over-Drive mode 
+    */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Initializes the CPU, AHB and APB busses clocks 
+    */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2
+                              |RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART6
+                              |RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART8
+                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
+                              |RCC_PERIPHCLK_I2C3;
+  PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.Uart4ClockSelection = RCC_UART4CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.Usart6ClockSelection = RCC_USART6CLKSOURCE_PCLK2;
+  PeriphClkInitStruct.Uart8ClockSelection = RCC_UART8CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure the Systick interrupt time 
+    */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+    /**Configure the Systick 
+    */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+}
+
+/* USER CODE BEGIN 4 */
+
+void orange_ball_normal_field(){
+	 if(openMVdata[0]==0){
+		//motor_move(250,0,0);
+		 returnHorme();
+	  }
+	 else if(openMVdata[0]>5){
+		 //motor_move(250,0,0);
+		 returnHorme();
+	 }
+	  else if(balldata[2]<200){
+	    if(balldata[2]<60 || balldata[1]>300){
+	    if(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_3)==1){
+	    	GOLE(balldata[1],balldata[2]);
+	  }
+	 else{
+		 ball_near(balldata[1],balldata[2]);
+	 }
+	    }
+	    else{
+			 ball_near(balldata[1],balldata[2]);
+	      }
+	    }
+	    else if(balldata[0]<350){
+			 ball_middle(balldata[1],balldata[2]);
+	      }
+	    else{
+			 ball_far(balldata[1],balldata[2]);
+	    }
+
+	 dataprintf();
+
+}
+
+void IR_ball_normal_field(){
+	 if(IR[0]==0){
+			 //motor_move(250,0,0);
+			 returnHorme();
+		  }
+	 else if(IR[0]>400){
+		 if(IR[1]<60 || IR[1]>300){
+		    if(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_3)==1){
+		    	GOLE(IR[1],IR[0]);
+		  }
+		 else{
+			 ball_near(IR[1],IR[0]);
+		 }
+		    }
+		    else{
+				 ball_near(IR[1],IR[0]);
+		      }
+		    }
+		    else if(IR[0]>300){
+				 ball_middle(IR[1],IR[0]);
+		      }
+		    else{
+				 ball_far(IR[1],IR[0]);
+		      }
+}
+
+void orange_ball_big_field(){
+	openMV_data_get();
+	int j = 0;
+
+	while (Rxbuf_ETH[j] != 254 &&  j<sizeof(Rxbuf_ETH[j])) {
+		j++;
+	}
+	if(j>=sizeof(Rxbuf_ETH[j])){
+		for(int k=0;k<(sizeof(ETH_data));k++){
+			ETH_data[k]=0;
+		}
+	}
+	else{
+		for (int k = 0; k < sizeof(ETH_data); k++) {
+			if ((j + k) >= sizeof(ETH_data)) {
+				ETH_data[k] = Rxbuf_ETH[k - (sizeof(ETH_data) - j)];
+			}
+			else {
+				ETH_data[k] = Rxbuf_ETH[j + k + 1];
+			}
+		}
+	}
+	if(ETH_data[sizeof(ETH_data)-1]==253){
+		for(uint8_t k=0;k<(sizeof(ETH_data));k++){
+			ETH_data[k]=Rxbuf_ETH[k];
+		}
+	}
+	else{
+		for(uint8_t k=0;k<(sizeof(ETH_data));k++){
+			Rxbuf_ETH[k]=ETH_data[k];
+		}
+	}
+
+	 vel_norm=ETH_data[0];
+	 vel_angle=ETH_data[1]*2;
+	 omega=(int8_t)ETH_data[2];
+	 kick_power=ETH_data[3];
+	 dribble_power=ETH_data[4];
+
+	 xprintf(" vel_norm=%d",vel_norm);
+	 xprintf(" vel_angle=%d",vel_angle);
+	 xprintf(" omega=%d",omega);
+	 xprintf(" kick=%d",kick_power);
+	 xprintf(" dribble=%d\r\n",dribble_power);
+
+	 if(ETH_data[3]==100){
+		 HAL_Delay(5);
+		 	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,1);
+		 	HAL_Delay(40);
+		 	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,0);
+		 	HAL_Delay(5);
+	 }
+		if(omega>0){motor_move(200,0,200);}
+		else if(omega<0){motor_move(150,0,200);}
+		else{
+			if(vel_norm==0){motor_move(0,0,0);}
+			else{motor_move(135,vel_angle,vel_norm*3);}}
+		uint8_t Txbuf_UART[6];
+
+		  Txbuf_UART[0]=254;
+		  Txbuf_UART[1]=openMVdata[0];
+		  Txbuf_UART[2]=(float)balldata[2]/2;
+		  Txbuf_UART[3]=(float)balldata[1]/2;
+		  Txbuf_UART[4]=n++;
+		  Txbuf_UART[5]=253;
+
+		  if(n>200){n=0;}
+		  HAL_UART_Transmit(&huart6,(uint8_t *)Txbuf_UART,6,0xff);
+}
+
+void IR_ball_big_field(){
+
+}
+
+void orange_ball_normal_field_use_marker(){
+
+}
+
+void kick(){
+	if(HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_4)==1){
+	motor_move(125,0,1000);
+	HAL_Delay(5);
+	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,1);
+	HAL_Delay(40);
+	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,0);
+	HAL_Delay(5);
+	}
+	else{
+		HAL_GPIO_WritePin(GPIOE,GPIO_PIN_15,0);
+	}
+}
+
+void GOLE(int ball_digree,int distance){
+	getplace();
+	if(place[0]==1){
+		motor_move(125,40,900);
+	  }
+	else if(place[0]==5){
+		motor_move(125,320,900);
+	  }
+	else{
+	    if(place[1]<=2){
+	      if(Ultasonic[0]<13 && Ultasonic[1]<13){
+	    	 switch (place[0]) {
+				case 2:
+					motor_move(125,40,900);
+					break;
+				case 4:
+					motor_move(125,320,900);
+					break;
+				default:
+					motor_move(125,320,900);
+					break;
+			}
+	    	 }
+	      else if(Ultasonic[0]<13){motor_move(125,320,900);}
+	      else if(Ultasonic[1]<13){motor_move(125,40,900);}
+	      else{
+		    	 switch (place[0]) {
+					case 2:
+						kick();motor_move(125,ball_digree,900);kick();
+						break;
+					case 4:
+						kick();motor_move(125,ball_digree,900);kick();
+						break;
+					default:
+						kick();motor_move(125,ball_digree,900);kick();
+						break;
+				}
+	      }
+	        }
+	    else if(place[1]==5){
+		      if(Ultasonic[0]<13 && Ultasonic[1]<13){
+		    	 switch (place[0]) {
+					case 2:
+						motor_move(125,40,900);kick();
+						break;
+					case 4:
+						motor_move(125,320,900);kick();
+						break;
+					default:
+						motor_move(125,320,900);kick();
+						break;
+				}
+		    	 }
+		      else if(Ultasonic[0]<13){motor_move(125,320,900);kick();}
+		      else if(Ultasonic[1]<13){motor_move(125,40,900);kick();}
+		      else{
+			    	 switch (place[0]) {
+						case 2:
+							kick();motor_move(125,ball_digree,900);kick();
+							break;
+						case 4:
+							kick();motor_move(125,ball_digree,900);kick();
+							break;
+						default:
+							motor_move(125,ball_digree,900);kick();
+							break;
+					}
+		      }
+		   }
+	   else{
+		      if(Ultasonic[0]<13 && Ultasonic[1]<13){
+		    	 switch (place[0]) {
+					case 2:
+						motor_move(125,40,900);
+						break;
+					case 4:
+						motor_move(125,320,900);
+						break;
+					default:
+						motor_move(125,320,900);
+						break;
+				}
+		    	 }
+		      else if(Ultasonic[0]<13){motor_move(125,320,900);kick();}
+		      else if(Ultasonic[1]<13){motor_move(125,40,900);kick();}
+		      else{
+			    	 switch (place[0]) {
+						case 2:
+							kick();motor_move(125,ball_digree,900);kick();
+							break;
+						case 4:
+							kick();motor_move(125,ball_digree,900);kick();
+							break;
+						default:
+							motor_move(125,ball_digree,900);kick();
+							break;
+					}
+		      }
+	    }
+	    }
+}
+
+void ball_near(int ball_digree,int distance){
+	int digree_cal,digree_cal_2;
+	int cal_temp;
+  if(Ultasonic[3]<=13){
+    if(ball_digree>90 && ball_digree<=180){motor_move(125,90,900);}
+    else if(ball_digree>180 && ball_digree<270){motor_move(125,270,900);}
+    else{motor_move(125,ball_digree,900);}
+    }
+  else if(place[1]==1){
+	  motor_move(125,ball_digree,900);
+  }
+  else{
+  if(ball_digree>=172 && ball_digree<=180){
+	  if(place[0]==1){
+    motor_move(125,90,900);
+    HAL_Delay(50);
+	  }
+	  else{
+		    motor_move(125,270,900);
+		    HAL_Delay(10);
+	  }
+      }
+    else if(ball_digree>=180 && ball_digree<=188){
+    	if(place[0]==5){
+		    motor_move(125,270,900);
+		    HAL_Delay(50);
+    	}
+    	else{
+      motor_move(125,90,900);
+	    HAL_Delay(10);
+    	}
+      }
+    else{
+  if(ball_digree>180){
+	  cal_temp=360-ball_digree;
+   digree_cal=abs(cal_temp)*(float)(log(abs(cal_temp+1))/2);
+    if(digree_cal>=180){
+      digree_cal=180;
+      }
+    else{
+    digree_cal=360-digree_cal;
+    }
+    digree_cal_2=abs(cal_temp)*(float)(log(abs(cal_temp+1))*0.45);
+    if(digree_cal_2>=180){
+      digree_cal_2=180;
+      }
+    else{
+    digree_cal_2=360-digree_cal_2;
+    }
+    }
+   else{
+    cal_temp=ball_digree;
+    digree_cal=cal_temp*(float)(log(cal_temp+1)/2);
+    if(digree_cal>=180){
+      digree_cal=180;
+      }
+    digree_cal_2=cal_temp*(float)(log(cal_temp+1)*0.45);
+    if(digree_cal_2>=180){
+      digree_cal_2=180;
+      }
+    }
+    if(digree_cal<14){motor_move(125,ball_digree,1000);}
+    else if(digree_cal>350){motor_move(125,ball_digree,1000);}
+    else{motor_move(125,digree_cal_2,900);}
+ }
+ }
+  }
+void ball_middle(int ball_digree,int distance){
+	int digree_cal,digree_cal_2;
+		int cal_temp;
+	  if(Ultasonic[3]<=13){
+	    if(ball_digree>90 && ball_digree<=180){motor_move(125,90,900);}
+	    else if(ball_digree>180 && ball_digree<270){motor_move(125,270,900);}
+	    else{motor_move(125,ball_digree,900);
+	    }
+	    }
+	  else if(place[1]==1){
+		  motor_move(125,ball_digree,950);
+	  }
+	  else{
+	  if(ball_digree>175 && ball_digree<=180){
+		  if(place[0]==1){
+	    motor_move(125,90,900);
+	    HAL_Delay(50);
+		  }
+		  else{
+			    motor_move(125,270,900);
+			    HAL_Delay(10);
+		  }
+	      }
+	    else if(ball_digree>180 && ball_digree<185){
+	    	if(place[0]==5){
+			    motor_move(125,270,900);
+			    HAL_Delay(50);
+	    	}
+	    	else{
+	      motor_move(125,90,900);
+		    HAL_Delay(10);
+	    	}
+	      }
+	    else{
+	  if(ball_digree>180){
+		  cal_temp=360-ball_digree;
+	   digree_cal=abs(cal_temp)*(float)(log(abs(cal_temp+1))/2);
+	    if(digree_cal>=180){
+	      digree_cal=180;
+	      }
+	    else{
+	    digree_cal=360-digree_cal;
+	    }
+	    digree_cal_2=abs(cal_temp)*(float)(log(abs(cal_temp+1))*0.4);
+	    if(digree_cal_2>=180){
+	      digree_cal_2=180;
+	      }
+	    else{
+	    digree_cal_2=360-digree_cal_2;
+	    }
+	    }
+	   else{
+	    cal_temp=ball_digree;
+	    digree_cal=cal_temp*(float)(log(cal_temp+1)/2);
+	    if(digree_cal>=180){
+	      digree_cal=180;
+	      }
+	    digree_cal_2=cal_temp*(float)(log(cal_temp+1)*0.4);
+	    if(digree_cal_2>=180){
+	      digree_cal_2=180;
+	      }
+	    }
+	    if(digree_cal<14){motor_move(125,ball_digree,1000);}
+	    else if(digree_cal>350){motor_move(125,ball_digree,1000);}
+	    else{motor_move(125,digree_cal_2,950);}
+	 }
+	  }
+  }
+void ball_far(int ball_digree,int distance){
+	int digree_cal,digree_cal_2;
+		int cal_temp;
+	if(Ultasonic[3]<=13){
+	    if(ball_digree>90 && ball_digree<=180){motor_move(125,90,900);}
+	    else if(ball_digree>180 && ball_digree<270){motor_move(125,270,900);}
+	    else{motor_move(125,ball_digree,900);
+	    }
+	    }
+	  else if(place[1]==1){
+		  motor_move(125,ball_digree,1000);
+	  }
+	  else{
+	  if(ball_digree>175 && ball_digree<=180){
+		  if(place[0]==1){
+	    motor_move(125,90,900);
+	    HAL_Delay(50);
+		  }
+		  else{
+			    motor_move(125,270,900);
+			    HAL_Delay(10);
+		  }
+	      }
+	    else if(ball_digree>180 && ball_digree<185){
+	    	if(place[0]==5){
+			    motor_move(125,270,900);
+			    HAL_Delay(50);
+	    	}
+	    	else{
+	      motor_move(125,90,900);
+		    HAL_Delay(10);
+	    	}
+	      }
+	    else{
+	  if(ball_digree>180){
+		  cal_temp=360-ball_digree;
+	   digree_cal=abs(cal_temp)*(float)(log(abs(cal_temp+1))/2);
+	    if(digree_cal>=180){
+	      digree_cal=180;
+	      }
+	    else{
+	    digree_cal=360-digree_cal;
+	    }
+	    digree_cal_2=abs(cal_temp)*(float)(log(abs(cal_temp+1))*0.35);
+	    if(digree_cal_2>=180){
+	      digree_cal_2=180;
+	      }
+	    else{
+	    digree_cal_2=360-digree_cal_2;
+	    }
+	    }
+	   else{
+	    cal_temp=ball_digree;
+	    digree_cal=cal_temp*(float)(log(cal_temp+1)/2);
+	    if(digree_cal>=180){
+	      digree_cal=180;
+	      }
+	    digree_cal_2=cal_temp*(float)(log(cal_temp+1)*0.35);
+	    if(digree_cal_2>=180){
+	      digree_cal_2=180;
+	      }
+	    }
+	    if(digree_cal<14){motor_move(125,ball_digree,1000);}
+	    else if(digree_cal>350){motor_move(125,ball_digree,1000);}
+	    else{motor_move(125,digree_cal_2,1000);}
+	 }
+	 }
+}
+
+void returnHorme(){
+	getplace();
+	if(place[0]==3 || place[0]==2 || place[0]==4){
+		if(place[1]<=2){
+			motor1(1000,1000);
+			motor2(1000,1000);
+			motor3(1000,1000);
+			motor4(1000,1000);
+		}
+		else{
+			motor_move(125,180,800);
+		}
+	}
+	else{
+	if(place[0]==1){motor_move(125,90,800);}
+	else if(place[0]==2){motor_move(125,90,800);}
+	else if(place[0]==4){motor_move(125,270,800);}
+	else if(place[0]==5){motor_move(125,270,800);}
+	else if(place[0]==6){
+		motor1(1000,1000);
+		motor2(1000,1000);
+		motor3(1000,1000);
+		motor4(1000,1000);
+	}
+	}
+}
+
+void dataprintf(){
+
+	if(mofumofu2>=500){
+	  if(HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_12)==0){
+		  getplace();
+	  xprintf(" JY901=%d",JY901_yaw_get(HOUI_def));
+	  //xprintf(" HMC6352=%d",HMC6352_yaw_get(0));
+	   xprintf(" IR[0]=%d",IR[0]);
+	   xprintf(" IR[1]=%d",IR[1]);
+	  //xprintf(" TM2=%d",TIM2->CNT);
+	  //xprintf(" SW=%d",HAL_GPIO_ReadPin(GPIOD,GPIO_PIN_15));
+	  xprintf(" b1=%d",HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_4));
+	  xprintf(" b2=%d",HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_3));
+	  //xprintf(" Line=%d",linetemp);
+	  xprintf(" LRFB=%d%d%d%d",HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_5),HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_6)
+			  ,HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13),HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_14));
+	  xprintf(" P0=%d",place[0]);
+	  xprintf(" P1=%d",place[1]);
+	  xprintf(" T0=%d",Ultasonic[0]);
+	  xprintf(" T1=%d",Ultasonic[1]);
+	  xprintf(" T2=%d",Ultasonic[2]);
+	  xprintf(" T3=%d",Ultasonic[3]);
+	  xprintf(" T4=%d",Ultasonic[4]);
+	  //xprintf(" TLa=%d",TLa);
+	  //xprintf(" TRa=%d",TRa);
+	  //xprintf(" TR+TL=%d",Ultasonic[2]+Ultasonic[4]);
+	  xprintf(" n=%d",openMVdata[0]);
+	  //xprintf(" ball_x=%d",openMVdata[1]);
+	  //xprintf(" ball_y=%d",openMVdata[2]);
+	  //xprintf(" ball_r=%d",balldata[0]);*/
+	  xprintf(" R=%d",balldata[2]);
+	  xprintf(" ball_dig=%d",balldata[1]);
+	  //xprintf(" n=%d",openMVdata[3]);
+	  //xprintf(" mark_x=%d",openMVdata[4]);
+	  //xprintf(" mark_y=%d",openMVdata[5]);
+	  /*xprintf(" ball_r=%d",balldata[0]);*/
+	  //xprintf(" R_mark=%d",markerdata[2]);
+	  //xprintf(" marker_dig=%d",markerdata[1]);
+
+	  xprintf("\r\n");
+	  mofumofu2=0;
+	  }
+	}
+	else{
+		mofumofu2++;
+	}
+}
+
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @param  file: The file name as string.
+  * @param  line: The line in file as a number.
+  * @retval None
+  */
+void _Error_Handler(char *file, int line)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  while(1) 
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+#ifdef  USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t* file, uint32_t line)
+{ 
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+    ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
